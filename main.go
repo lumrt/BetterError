@@ -2,12 +2,54 @@ package main
 
 import (
     "bytes"
+    "encoding/json"
     "fmt"
     "io/ioutil"
+    "net/http"
     "os"
     "os/exec"
     "strings"
 )
+
+/* implementation of api request to translate*/
+
+// type ChatGPTRequest struct {
+//     Model    string    `json:"model"`
+//     Messages []Message `json:"messages"`
+// }
+
+// type Message struct {
+//     Role    string `json:"role"`
+//     Content string `json:"content"`
+// }
+
+
+// type ChatGPTResponse struct {
+//     Choices []struct {
+//         Message Message `json:"message"`
+//     } `json:"choices"`
+// }
+
+
+
+
+
+// TO DO !
+func translateErrorWithChatGPT(apiKey, errorMsg string) (string, error) {
+    url := "https://api.openai.com/v1/chat/completions"
+    requestBody := ChatGPTRequest{
+        Model: "gpt-4",
+        Messages: []Message{
+            {Role: "system", Content: "You are a helpful assistant that translates Python error messages from English to French."},
+            {Role: "user", Content: errorMsg},
+        },
+    }
+
+
+
+	
+	return "", fmt.Errorf("no translation found in the response")
+}
 
 var errorTranslations = map[string]string{
     "division by zero": "division par zéro",
@@ -49,6 +91,13 @@ func executePythonScript(script string) (string, error) {
 func main() {
     if len(os.Args) < 2 {
         fmt.Println("Usage: go run main.go <filename.py>")
+        return
+    }
+
+	// check api key is inserted
+	apiKey := os.Getenv("OPENAI_API_KEY")
+    if apiKey == "" {
+        fmt.Println("L'environnement 'OPENAI_API_KEY' n'est pas défini.")
         return
     }
 
