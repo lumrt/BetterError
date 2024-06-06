@@ -30,3 +30,12 @@ Pour cloner un dépôt Git contenant des fichiers Go, vous pouvez utiliser la co
 
 ```sh
 git clone https://github.com/user/repo.git
+```
+
+## Execution du Programme
+
+Pour passer votre fichier .py au error--check, il suffit d'entrer :
+
+```sh
+go run error--check.go file.py
+```
