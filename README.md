@@ -24,7 +24,7 @@ sudo dnf install golang
 choco install golang
 ```
 
-Utilisation de la Commande Git Clone
+## Utilisation de la Commande Git Clone
 
 Pour cloner un dépôt Git contenant des fichiers Go, vous pouvez utiliser la commande `git clone` suivie de l'adresse du dépôt. Voici un exemple :
 
