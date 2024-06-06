@@ -29,7 +29,7 @@ choco install golang
 Pour cloner un dépôt Git contenant des fichiers Go, vous pouvez utiliser la commande `git clone` suivie de l'adresse du dépôt. Voici un exemple :
 
 ```sh
-git clone https://github.com/user/repo.git
+git clone https://github.com/lu4200/BetterError.git
 ```
 
 ## Execution du Programme
