@@ -6,10 +6,11 @@
 /*   By: lucas <lucas@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:29:38 by lucas             #+#    #+#             */
-/*   Updated: 2024/06/05 14:30:44 by lucas            ###   ########.fr       */
+/*   Updated: 2024/06/06 14:47:23 by lucas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+package main
 
 import (
     "bytes"
@@ -24,43 +25,96 @@ import (
 
 /* implementation of api request to translate*/
 
-// type ChatGPTRequest struct {
-//     Model    string    `json:"model"`
-//     Messages []Message `json:"messages"`
-// }
+type ChatGPTRequest struct {
+    Model    string    `json:"model"`
+    Messages []Message `json:"messages"`
+}
 
-// type Message struct {
-//     Role    string `json:"role"`
-//     Content string `json:"content"`
-// }
-
-
-// type ChatGPTResponse struct {
-//     Choices []struct {
-//         Message Message `json:"message"`
-//     } `json:"choices"`
-// }
+type Message struct {
+    Role    string `json:"role"`
+    Content string `json:"content"`
+}
 
 
+type ChatGPTResponse struct {
+    Choices []struct {
+        Message Message `json:"message"`
+    } `json:"choices"`
+}
 
 
 
-// TO DO !
 func translateErrorWithChatGPT(apiKey, errorMsg string) (string, error) {
+
     url := "https://api.openai.com/v1/chat/completions"
+    
+    
+    
+    // request structure
     requestBody := ChatGPTRequest{
-        Model: "gpt-4",
+        Model: "gpt-3.5-turbo",
         Messages: []Message{
             {Role: "system", Content: "You are a helpful assistant that translates Python error messages from English to French."},
             {Role: "user", Content: errorMsg},
         },
     }
 
+    
+    
+    
+    // from go struct to JSON
+    jsonBody, err := json.Marshal(requestBody)
+    if err != nil {
+        return "", err
+    }
 
 
-	
-	return "", fmt.Errorf("no translation found in the response")
+
+    // POST http request
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+    if err != nil {
+        return "", err
+    }
+
+
+    // init request header
+    req.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Authorization", "Bearer "+apiKey)
+
+
+
+    // request output
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return "", err
+    }
+    defer resp.Body.Close()
+
+
+
+    // reading resp body
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return "", err
+    }
+
+
+
+    // from JSON to go struct
+    var chatGPTResponse ChatGPTResponse
+    if err := json.Unmarshal(body, &chatGPTResponse); err != nil {
+        return "", err
+    }
+
+    // extraction of the first traduction in the struct
+    if len(chatGPTResponse.Choices) > 0 {
+        return chatGPTResponse.Choices[0].Message.Content, nil
+    }
+
+    return "", fmt.Errorf("no translation found in the response")
 }
+
 
 var errorTranslations = map[string]string{
     "division by zero": "division par zéro",
@@ -121,9 +175,13 @@ func main() {
 
     output, err := executePythonScript(script)
     if err != nil {
-        translatedError := translateErrorMessage(output)
-        fmt.Println("Erreur capturée et traduite :", translatedError)
+        translatedError, err := translateErrorWithChatGPT(apiKey, output)
+        if err != nil {
+            fmt.Println("Erreur lors de la traduction avec ChatGPT:", err)
+        } else {
+            fmt.Println("Erreur capturée et traduite :", translatedError)
+        }
     } else {
-        fmt.Println(output)
+        fmt.Println("Sortie du script :", output)
     }
 }
