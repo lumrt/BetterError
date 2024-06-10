@@ -1,45 +1,31 @@
 package main
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"log"
-)
 
-const (
-	apiEndpoint = "https://api.openai.com/v1/chat/completions"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main1() {
-	// Use your API KEY here
-	apiKey := "YOUR API KEY HERE"
-	client := resty.New()
-
-	response, err := client.R().
-		SetAuthToken(apiKey).
-		SetHeader("Content-Type", "application/json").
-		SetBody(map[string]interface{}{
-			"model":      "gpt-3.5-turbo",
-			"messages":   []interface{}{map[string]interface{}{"role": "system", "content": "Hi can you tell me what is the factorial of 10?"}},
-			"max_tokens": 50,
-		}).
-		Post(apiEndpoint)
+	client := openai.NewClient("your token")
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: "Hello!",
+				},
+			},
+		},
+	)
 
 	if err != nil {
-		log.Fatalf("Error while sending send the request: %v", err)
-	}
-
-	body := response.Body()
-
-	var data map[string]interface{}
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		fmt.Println("Error while decoding JSON response:", err)
+		fmt.Printf("ChatCompletion error: %v\n", err)
 		return
 	}
 
-	// Extract the content from the JSON response
-	content := data["choices"].([]interface{})[0].(map[string]interface{})["message"].(map[string]interface{})["content"].(string)
-	fmt.Println(content)
-
+	fmt.Println(resp.Choices[0].Message.Content)
 }
