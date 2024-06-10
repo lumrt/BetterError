@@ -4,7 +4,7 @@ The Better-Error project is a tool designed to facilitate error message manageme
 
 ## Main Features
 
-Better-Error primarily focuses on translating error messages. It provides a library of predefined translations for commonly encountered error messages in languages like Python, JavaScript, Java, etc. Developers can integrate this library into their projects to obtain error messages in their preferred language, making it easier to understand and debug the code.
+Better-Error primarily focuses on translating error messages. It provides a library of predefined translations for commonly encountered error messages in Python. Developers, Teachers and Students can integrate this library into their projects to obtain error messages in their preferred language, making it easier to understand and debug the code.
 
 ## Installing GO in One Command
 
@@ -42,4 +42,5 @@ go run BetterError/error--check.go file.py
 ## Update incoming
 - Use of LLM models to explain errors in more detail
 - Addition of 10+ interpreted languages
+- Addition of Italian/Spanish/German/Dutch/Russian
 - Use of more traditional databases to store data
