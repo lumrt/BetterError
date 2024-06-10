@@ -32,6 +32,7 @@ choco install golang
 
 ## Clone the Repository 📩
 ```sh
+https://github.com/lu4200/BetterError.git
 ```
 
 ## Script Execution ⌨️
