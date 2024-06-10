@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.go                                            :+:      :+:    :+:   */
+/*   api-check-py.go                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lucas <lucas@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/05 13:29:38 by lucas             #+#    #+#             */
-/*   Updated: 2024/06/10 13:47:35 by lucas            ###   ########.fr       */
+/*   Updated: 2024/06/10 14:34:02 by lucas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,12 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"os/exec"
-	"strings"
+
+	"github.com/sashabaranov/go-openai"
 )
 
 /* implementation of api request to translate*/
@@ -42,81 +40,38 @@ type ChatGPTResponse struct {
 	} `json:"choices"`
 }
 
-func translateErrorWithChatGPT(apiKey, errorMsg string) (string, error) {
+func TranslateErrorWithChatGPT(apiKey, errorMsg string) (string, error) {
+	client := openai.NewClient(apiKey)
 
-	url := "https://api.openai.com/v1/chat/completions"
-
-	// request structure
-	requestBody := ChatGPTRequest{
-		Model: "gpt-3.5",
-		Messages: []Message{
-			{Role: "system", Content: "You are a helpful assistant that translates Python error messages from English to French."},
-			{Role: "user", Content: errorMsg},
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    "Instructor",
+					Content: "I am a computer science instructor translating error messages from English to French.",
+				},
+				{
+					Role:    "Student",
+					Content: errorMsg,
+				},
+			},
 		},
-	}
-
-	// from go struct to JSON
-	jsonBody, err := json.Marshal(requestBody)
+	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("erreur lors de la demande de traduction avec OpenAI: %v", err)
 	}
 
-	// POST http request
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return "", err
+	if len(resp.Choices) > 0 {
+		return resp.Choices[0].Message.Content, nil
 	}
 
-	// init request header
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	// request output
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	// reading resp body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	// from JSON to go struct
-	var chatGPTResponse ChatGPTResponse
-	if err := json.Unmarshal(body, &chatGPTResponse); err != nil {
-		return "", err
-	}
-
-	// extraction of the first traduction in the struct
-	if len(chatGPTResponse.Choices) > 0 {
-		return chatGPTResponse.Choices[0].Message.Content, nil
-	}
-
-	return "", fmt.Errorf("no translation found in the response")
-}
-
-var errorTranslations = map[string]string{
-	"division by zero":          "division par zéro",
-	"name is not defined":       "objet non défini n'est pas défini",
-	"invalid syntax":            "Erreur de Syntaxe",
-	"SyntaxError: expected ':'": "Tu as oublié ':'",
-}
-
-func translateErrorMessage(errorMsg string) string {
-	for en, fr := range errorTranslations {
-		if strings.Contains(errorMsg, en) {
-			return strings.ReplaceAll(errorMsg, en, fr)
-		}
-	}
-	return errorMsg
+	return "", fmt.Errorf("aucune traduction trouvée dans la réponse")
 }
 
 func readFile(filename string) (string, error) {
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return "", err
 	}
@@ -158,7 +113,7 @@ func main() {
 
 	output, err := executePythonScript(script)
 	if err != nil {
-		translatedError, err := translateErrorWithChatGPT(apiKey, output)
+		translatedError, err := TranslateErrorWithChatGPT(apiKey, output)
 		if err != nil {
 			fmt.Println("Erreur lors de la traduction avec ChatGPT:", err)
 		} else {
