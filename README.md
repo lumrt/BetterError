@@ -37,11 +37,11 @@ https://github.com/lu4200/BetterError.git
 
 ## Script Execution ⌨️
 ```terminal
-go run BetterError/error--check.go file.py
+go run BetterError/error--check.go file.py/.js
 ```
 
 ## Update incoming... 💡
 - Use of LLM models to explain errors in more detail ⚖
-- Addition of 10+ interpreted languages 🖥️
+- Addition of 5+ interpreted languages 🖥️
 - Addition of Italian🇮🇹/Spanish🇪🇸/German🇩🇪/Dutch🇳🇱/Russian🇷🇺
 - Use of more traditional databases to store data 📊
