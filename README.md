@@ -45,6 +45,7 @@ go run BetterError/error--check.go file.py/.js
 - Addition of 5+ interpreted languages 🖥️
 - Addition of Italian🇮🇹/Spanish🇪🇸/German🇩🇪/Dutch🇳🇱/Russian🇷🇺
 - Use of more traditional databases to store data 📊
+- More user Friendly execution
 
 ## Contribution
 If you want to contribute to this repo adding your programming langugage or if you speak fluently IT/S/DE/NE/RU do not hesitate to reach me on lumaret@student.42.fr with "Asking for contribution" as subject
